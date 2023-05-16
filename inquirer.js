@@ -156,12 +156,45 @@ async function addDepartment() {
 };
 
 async function addRole() {
+    try {
+        const addRole = await prompt(questionAddRole);
+        const title = addRole.roleName;
+        const salary = addRole.salary;
+        const department_id = addRole.department_id;
 
+        db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, department_id], function (err, results) {
+            if (err) {
+                console.log(err);
+                return;
+            } 
+            init();
+        })
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 async function addEmployee() {
+    try {
+        const addEmployee = await prompt(questionAddEmployee);
+        const firstName = addEmployee.employeeFirstName;
+        const lastName = addEmployee.employeeLastName;
+        const role = addEmployee.employeeRole;
+        const manager = addEmployee.employeeManager;
+
+        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [firstName, lastName, role, manager], function (err, results) {
+            if (err) {
+                console.log(err);
+                return;
+            } 
+            init();
+        })
+    } catch (err) {
+        console.log(err);
+    }
 
 };
+
  async function updateEmployeeRole() {
 
 };
