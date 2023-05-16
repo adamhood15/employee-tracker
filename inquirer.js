@@ -34,9 +34,10 @@ questionAddRole = [
         message: "Enter the salary of the role you'd like to add"
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'roleDepartment',
-        message: "Enter the department of the role you'd like to add"
+        message: "Select the department of the role you'd like to add",
+        choices: ['Sales', 'Engineering', 'Finance', 'Legal']
     }
 ];
 
@@ -52,14 +53,17 @@ questionAddEmployee = [
         message: "Enter the last name of the employee you'd like to add"
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'employeeRole',
-        message: "Enter the role of the employee you'd like to add"
+        message: "Select the role for your new employee.",
+        choices: ['Sales Lead', 'Salesperson', 'Lead Engineer', 'Software Engineer', 'Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer']
+
     },
     {
-        type: 'input',
+        type: 'list',
         name: 'employeeManager',
-        message: "Enter the manager of the employee you'd like to add"
+        message: "Select the manager of the employee you'd like to add",
+        choices: ['Adam Hood', 'Claire Alverson', 'Mike Mondello', 'Ashley Rodriguez', 'Matt Murdock']
     }
 ];
 
@@ -159,14 +163,26 @@ async function addRole() {
     try {
         const addRole = await prompt(questionAddRole);
         const title = addRole.roleName;
-        const salary = addRole.salary;
-        const department_id = addRole.department_id;
+        const salary = addRole.roleSalary;
+        let department_id = addRole.roleDepartment;
+
+        //Takes the users selection for department and converts it to an integer
+        if (department_id === 'Sales') {
+            department_id = 1;
+        } else if (department_id === 'Engineering') {
+            department_id = 2;
+        } else if (department_id === 'Finance') {
+            department_id = 3;
+        } else if (department_id === 'Legal') {
+            department_id = 4;
+        }
 
         db.query(`INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`, [title, salary, department_id], function (err, results) {
             if (err) {
                 console.log(err);
                 return;
             } 
+            console.log(title, salary, department_id);
             init();
         })
     } catch (err) {
@@ -179,10 +195,29 @@ async function addEmployee() {
         const addEmployee = await prompt(questionAddEmployee);
         const firstName = addEmployee.employeeFirstName;
         const lastName = addEmployee.employeeLastName;
-        const role = addEmployee.employeeRole;
-        const manager = addEmployee.employeeManager;
+        let role = addEmployee.employeeRole;
+        let managerName = addEmployee.employeeManager;
 
-        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [firstName, lastName, role, manager], function (err, results) {
+        //Converts the manager name selected by the user to the manager id in the database
+        db.query(`SELECT id FROM employee WHERE CONCAT(first_name, ' ', last_name) = ?`, [managerName], function (err, managerResult) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            
+            const managerID = managerResult[0].id;
+        })
+        
+        db.query(`SELECT id FROM role WHERE title = ?`, [role], function (err, result) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            const roleID = roleResults[0].id;
+        })
+
+        db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, [firstName, lastName, roleID, managerID], function (err, results) {
             if (err) {
                 console.log(err);
                 return;
